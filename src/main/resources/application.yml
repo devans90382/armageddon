@@ -1,0 +1,12 @@
+server:
+  port: 9090
+  shutdown: graceful
+  lifecycle:
+    timeout-per-shutdown-phase: 15
+
+logging:
+  level:
+    root: INFO
+  pattern:
+    level: '%magenta([%d{HH:mm:ss.SSS}]) %green([%thread]) %yellow([%X{X-B3-TraceId:-}, %X{X-User-Id}]) %cyan([%F]) %highlight(%5p) %msg%n'
+    console: '%magenta([%d{HH:mm:ss.SSS}]) %green([%thread]) %yellow([%X{X-B3-TraceId:-}, %X{X-User-Id}]) %cyan([%F]) %highlight(%5p) %msg%n'

@@ -1,0 +1,221 @@
+openapi: 3.0.0
+info:
+  title: Profile Service API
+  version: 1.0.0
+  description: API for managing business profiles
+
+paths:
+  /profiles:
+    post:
+      tags:
+        - Profile
+      summary: Create a new business profile
+      operationId: createProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBusinessProfileRequest'
+      responses:
+        '201':
+          description: Profile created successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /profiles/{profileId}:
+    get:
+      tags:
+        - Profile
+      summary: Get a business profile by ID
+      operationId: getProfileById
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Retrieved profile successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessProfile'
+
+    put:
+      tags:
+        - Profile
+      summary: Update a business profile by ID
+      operationId: updateProfile
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBusinessProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Profile not updated
+
+    delete:
+      tags:
+        - Profile
+      summary: Delete a business profile by ID
+      operationId: deleteProfile
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile deleted successfully
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Profile not found
+
+components:
+  schemas:
+    BusinessProfile:
+      type: object
+      required:
+        - profileId
+        - companyName
+        - legalName
+        - businessAddress
+        - legalAddress
+        - taxIdentifier
+        - email
+        - website
+      properties:
+        profileId:
+          type: string
+        companyName:
+          type: string
+        legalName:
+          type: string
+        businessAddress:
+          $ref: '#/components/schemas/Address'
+        legalAddress:
+          $ref: '#/components/schemas/Address'
+        taxIdentifier:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+
+    CreateBusinessProfileRequest:
+      type: object
+      required:
+        - companyName
+        - legalName
+        - businessAddress
+        - legalAddress
+        - taxIdentifier
+        - email
+        - website
+      properties:
+        companyName:
+          type: string
+        legalName:
+          type: string
+        businessAddress:
+          $ref: '#/components/schemas/Address'
+        legalAddress:
+          $ref: '#/components/schemas/Address'
+        taxIdentifier:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+
+    UpdateBusinessProfileRequest:
+      type: object
+      required:
+        - companyName
+        - legalName
+        - businessAddress
+        - legalAddress
+        - taxIdentifier
+        - email
+        - website
+      properties:
+        companyName:
+          type: string
+        legalName:
+          type: string
+        businessAddress:
+          $ref: '#/components/schemas/Address'
+        legalAddress:
+          $ref: '#/components/schemas/Address'
+        taxIdentifier:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+
+    Address:
+      type: object
+      required:
+        - line1
+        - line2
+        - city
+        - state
+        - zip
+        - country
+      properties:
+        line1:
+          type: string
+        line2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - errorCode
+        - message
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+        errorCode:
+          type: string
+        message:
+          type: string
+
+    Error:
+      type: string
+      enum:
+        - PROFILE_NOT_FOUND
+        - PROFILE_UPDATE_FORBIDDEN
+        - PROFILE_UNHANDLED_EXCEPTION
