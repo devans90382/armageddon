@@ -19,6 +19,21 @@ fun BusinessProfile.toDynamoItem(): BusinessProfileItem {
     )
 }
 
+fun BusinessProfile.toUpdateDynamoItem(item: BusinessProfileItem): BusinessProfileItem {
+    return BusinessProfileItem(
+        profileId = item.profileId,
+        companyName = this.companyName,
+        legalName = this.legalName,
+        businessAddress = this.businessAddress,
+        legalAddress = this.legalAddress,
+        taxIdentifier = this.taxIdentifier,
+        email = this.email,
+        website = this.website,
+        createdAt = item.createdAt,
+        updatedAt = getCurrentEpochMilliSecond()
+    )
+}
+
 fun BusinessProfileItem.toBusinessProfile(): BusinessProfile {
     return BusinessProfile(
         profileId = this.profileId,

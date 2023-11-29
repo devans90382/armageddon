@@ -1,10 +1,8 @@
 package com.devans.profile.config
 
-import com.devans.profile.external.commons.RetryConfig
 import com.devans.profile.utils.CircuitBreakerNames
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
-import reactor.util.retry.Retry
 
 
 @ConfigurationProperties("devans.profile")
@@ -64,7 +62,7 @@ class ProfileConfig {
             val circuitBreakerConfiguration = CircuitBreakerConfiguration()
 
             class CircuitBreakerConfiguration {
-                var name = CircuitBreakerNames.AccountingCircuitBreaker
+                var name = CircuitBreakerNames.PayrollCircuitBreaker
                 var failureRateThreshold: Float = 50f
                 var slowCallRateThreshold: Float = 10f
                 var waitDurationInOpenStateInMillis: Long = 1000

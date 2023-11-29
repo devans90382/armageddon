@@ -18,14 +18,12 @@ class ProfileController(private val profileService: ProfileService) : ProfileApi
         profileId: String,
         updateBusinessProfileRequest: UpdateBusinessProfileRequest
     ): ResponseEntity<String> {
-        val updated: Boolean = profileService.updateProfile(
-            profileId = profileId, updateBusinessProfileRequest = updateBusinessProfileRequest.toDomainObject()
+        return ResponseEntity.ok(
+            profileService.updateProfile(
+                profileId = profileId,
+                updateBusinessProfileRequest = updateBusinessProfileRequest.toDomainObject()
+            )
         )
-        return if (updated) {
-            ResponseEntity.ok("Profile updated successfully")
-        } else {
-            ResponseEntity.ok().body("Profile not updated")
-        }
     }
 
     override suspend fun createProfile(createBusinessProfileRequest: CreateBusinessProfileRequest): ResponseEntity<String> {
@@ -36,12 +34,7 @@ class ProfileController(private val profileService: ProfileService) : ProfileApi
     }
 
     override suspend fun deleteProfile(profileId: String): ResponseEntity<String> {
-        val deleted: Boolean = profileService.deleteProfile(profileId = profileId)
-        return if (deleted) {
-            ResponseEntity.ok("Profile deleted successfully")
-        } else {
-            ResponseEntity.notFound().build()
-        }
+        return ResponseEntity.ok(profileService.deleteProfile(profileId = profileId))
     }
 
     override suspend fun getProfileById(profileId: String): ResponseEntity<BusinessProfile> {
