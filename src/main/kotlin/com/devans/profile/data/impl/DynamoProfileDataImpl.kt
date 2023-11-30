@@ -8,6 +8,7 @@ import com.devans.profile.data.toDynamoItem
 import com.devans.profile.data.toUpdateDynamoItem
 import com.devans.profile.exception.ProfileErrorCodes
 import com.devans.profile.exception.ProfileException
+import com.devans.profile.metrics.MetricsBuilder
 import com.devans.profile.model.BusinessProfile
 import mu.KLoggable
 import mu.KLogger
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class DynamoProfileDataImpl(
-    private val dynamoDBMapper: DynamoDBMapper
+    private val dynamoDBMapper: DynamoDBMapper,
+    private val metricsBuilder: MetricsBuilder
 ) : ProfileData {
 
     companion object : KLoggable {
@@ -26,6 +28,7 @@ class DynamoProfileDataImpl(
         logger.info { "Creating business profile for company: ${profile.companyName} and profileId: ${profile.profileId}" }
         try {
             dynamoDBMapper.save(profile.toDynamoItem())
+            metricsBuilder.buildCounter(name = "ProfileCreated")
         } catch (e: Exception) {
             handleProfileException("Creating", e)
         }
@@ -34,8 +37,9 @@ class DynamoProfileDataImpl(
     override suspend fun getProfileById(profileId: String): BusinessProfile {
         logger.info { "Get profile by id: $profileId" }
         return try {
-            dynamoDBMapper.load(BusinessProfileItem::class.java, profileId)?.toBusinessProfile()
-                ?: handleProfileNotFound(profileId)
+            dynamoDBMapper.load(BusinessProfileItem::class.java, profileId)?.toBusinessProfile().also {
+                metricsBuilder.buildCounter(name = "ProfileFetched")
+            } ?: handleProfileNotFound(profileId)
         } catch (e: Exception) {
             handleProfileException("Getting", e)
         }
@@ -48,6 +52,7 @@ class DynamoProfileDataImpl(
 
         try {
             dynamoDBMapper.save(profile.toUpdateDynamoItem(item = businessProfileItem))
+            metricsBuilder.buildCounter(name = "ProfileUpdated")
         } catch (e: Exception) {
             handleProfileException("Updating", e)
         }
@@ -58,6 +63,7 @@ class DynamoProfileDataImpl(
         try {
             dynamoDBMapper.load(BusinessProfileItem::class.java, profileId)?.let {
                 dynamoDBMapper.delete(it)
+                metricsBuilder.buildCounter(name = "ProfileDeleted")
             } ?: handleProfileNotFound(profileId)
         } catch (e: Exception) {
             handleProfileException("Deleting", e)
@@ -66,6 +72,7 @@ class DynamoProfileDataImpl(
 
     private suspend fun handleProfileNotFound(profileId: String): Nothing {
         logger.info { "Profile with id: $profileId doesn't exist" }
+        metricsBuilder.buildExceptionCounter(operation = "ProfileNotFound")
         throw ProfileException(
             error = ProfileErrorCodes.PROFILE_NOT_FOUND,
             message = "Profile not found with ID: $profileId"
@@ -74,6 +81,7 @@ class DynamoProfileDataImpl(
 
     private suspend fun handleProfileException(operation: String, e: Exception): Nothing {
         logger.info { "Exception in $operation profile from DynamoDB: ${e.message}" }
+        metricsBuilder.buildExceptionCounter(operation = operation)
         throw ProfileException(
             error = ProfileErrorCodes.PROFILE_UNHANDLED_EXCEPTION,
             message = "$operation Profile failed: ${e.message}"

@@ -2,7 +2,10 @@ package com.devans.profile.service
 
 import com.devans.profile.external.accounting.client.impl.AccountingClientImpl
 import com.devans.profile.external.commons.BusinessProfileValidateRequest
+import com.devans.profile.external.commons.BusinessProfileValidateResponse
+import com.devans.profile.external.commons.client.ValidationClient
 import com.devans.profile.external.payroll.client.impl.PayrollClientImpl
+import com.devans.profile.metrics.MetricsBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -13,7 +16,8 @@ import org.springframework.stereotype.Service
 @Service
 class ValidationService(
     private val accountingClientImpl: AccountingClientImpl,
-    private val payrollClientImpl: PayrollClientImpl
+    private val payrollClientImpl: PayrollClientImpl,
+    private val metricsBuilder: MetricsBuilder
 ) {
 
     companion object : KLoggable {
@@ -24,22 +28,49 @@ class ValidationService(
         logger.info { "Received profile update validation request for profile id: ${businessProfileValidateRequest.profileId}" }
         return coroutineScope {
 
-            // Calling accounting service for business profile validation check
-            val accountingServiceValidationResult = async(Dispatchers.IO) {
-                logger.info { "Calling Accounting service to validate profile id: ${businessProfileValidateRequest.profileId}" }
-                accountingClientImpl.validate(businessProfileValidateRequest)
+            try {
+                val accountingServiceValidationResult = async(Dispatchers.IO) {
+                    validateProfileByService(
+                        accountingClientImpl,
+                        "Accounting",
+                        businessProfileValidateRequest
+                    )
+                }
+
+                val payrollServiceValidationResult = async(Dispatchers.IO) {
+                    validateProfileByService(
+                        payrollClientImpl,
+                        "Payroll",
+                        businessProfileValidateRequest
+                    )
+                }
+
+                // Similarly add any other service for validation
+
+                accountingServiceValidationResult.await().approved && payrollServiceValidationResult.await().approved
+            } catch (e: Exception) {
+                throw e
             }
-
-            // Calling payroll service for business profile validation check
-            val payrollServiceValidationResult = async(Dispatchers.IO) {
-                logger.info { "Calling Payroll service to validate profile id: ${businessProfileValidateRequest.profileId}" }
-                payrollClientImpl.validate(businessProfileValidateRequest)
-            }
-
-            // Similarly other calls can be added, and they will be added asynchronously
-
-            accountingServiceValidationResult.await().approved && payrollServiceValidationResult.await().approved
         }
     }
 
+    private suspend fun validateProfileByService(
+        client: ValidationClient,
+        serviceName: String,
+        businessProfileValidateRequest: BusinessProfileValidateRequest
+    ): BusinessProfileValidateResponse {
+        logger.info { "Calling $serviceName service to validate profile id: ${businessProfileValidateRequest.profileId}" }
+        try {
+            return client.validate(businessProfileValidateRequest = businessProfileValidateRequest)
+        } catch (e: Exception) {
+            logger.info {
+                "Call to $serviceName service to validate profile id: " +
+                    "${businessProfileValidateRequest.profileId} failed, due to error : ${e.message}"
+            }
+            metricsBuilder.buildExceptionCounter(
+                operation = "${serviceName}ProfileValidate"
+            )
+            throw e
+        }
+    }
 }

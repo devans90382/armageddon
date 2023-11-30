@@ -43,8 +43,10 @@ class ProfileService(
     }
 
     suspend fun updateProfile(profileId: String, updateBusinessProfileRequest: UpdateBusinessProfileRequest): String {
-        logger.info { "Received request to update business profile with id : $profileId," +
-            " and request: $updateBusinessProfileRequest" }
+        logger.info {
+            "Received request to update business profile with id : $profileId," +
+                " and request: $updateBusinessProfileRequest"
+        }
         return try {
             if (validateBusinessProfileUpdate(
                     profileId = profileId,
@@ -84,9 +86,13 @@ class ProfileService(
         profileId: String,
         updateBusinessProfileRequest: UpdateBusinessProfileRequest
     ): Boolean {
-        return validationService.profileUpdateValidation(
-            businessProfileValidateRequest =
-            updateBusinessProfileRequest.toBusinessProfileValidateRequest(profileId = profileId)
-        )
+        return try {
+            validationService.profileUpdateValidation(
+                businessProfileValidateRequest =
+                updateBusinessProfileRequest.toBusinessProfileValidateRequest(profileId = profileId)
+            )
+        } catch (e: Exception) {
+            throw e
+        }
     }
 }

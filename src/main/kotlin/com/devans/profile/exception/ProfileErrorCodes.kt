@@ -1,6 +1,6 @@
 package com.devans.profile.exception
 
-enum class ProfileErrorCodes(val code: String): Error {
+enum class ProfileErrorCodes(val code: String) : Error {
     PROFILE_NOT_FOUND("PROFILE_NOT_FOUND") {
         override fun getDescription(): String {
             return "No profile found for given Id"
@@ -29,7 +29,7 @@ enum class ProfileErrorCodes(val code: String): Error {
         }
     },
 
-    PROFILE_UNHANDLED_EXCEPTION("PROFILE_UNHANDLED_EXCEPTION"){
+    PROFILE_UNHANDLED_EXCEPTION("PROFILE_UNHANDLED_EXCEPTION") {
         override fun getDescription(): String {
             return "Unhandled exception"
         }

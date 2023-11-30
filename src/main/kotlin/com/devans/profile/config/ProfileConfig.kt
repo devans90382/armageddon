@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration
 class ProfileConfig {
 
     val integrations = Integrations()
+    val observabilityConfig = ObservabilityConfig()
 
     class Integrations {
         val accounting = Accounting()
@@ -17,10 +18,10 @@ class ProfileConfig {
         val payments = Payments()
 
         class Accounting {
-            val apiEndpoint: String = "http://localhost:9091"
-            val connectTimeoutInMillis: Long = 100000
-            val readTimeoutInMillis: Long = 100000
-            val followRedirects: Boolean = false
+            var apiEndpoint: String = "http://localhost:9091"
+            var connectTimeoutInMillis: Long = 100000
+            var readTimeoutInMillis: Long = 100000
+            var followRedirects: Boolean = false
 
             val retryConfig = RetryConfig()
 
@@ -46,10 +47,10 @@ class ProfileConfig {
         }
 
         class Payroll {
-            val apiEndpoint: String = "http://localhost:9092"
-            val connectTimeoutInMillis: Long = 100000
-            val readTimeoutInMillis: Long = 100000
-            val followRedirects: Boolean = false
+            var apiEndpoint: String = "http://localhost:9092"
+            var connectTimeoutInMillis: Long = 100000
+            var readTimeoutInMillis: Long = 100000
+            var followRedirects: Boolean = false
 
             val retryConfig = RetryConfig()
 
@@ -75,5 +76,11 @@ class ProfileConfig {
         }
 
         class Payments {}
+    }
+
+    class ObservabilityConfig {
+        var name: String = "profile"
+        var scrapperPort: Int = 9191
+        var scrapperPath: String = "/profile/metrics"
     }
 }
