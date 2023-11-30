@@ -59,6 +59,13 @@ object Dependency {
         const val Prometheus = "io.micrometer:micrometer-registry-prometheus:$version"
     }
 
+    object Testing {
+        private const val version = "5.1.0"
+        private const val coreVersion = "5.7.0"
+        const val MockitoKotlin = "org.mockito.kotlin:mockito-kotlin:$version"
+        const val MockitoCore = "org.mockito:mockito-core:$coreVersion"
+    }
+
 }
 
 repositories {
@@ -89,6 +96,7 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
+    testImplementation(Dependency.Testing.MockitoKotlin)
 }
 
 val path = "$rootDir/src/main/kotlin/com/devans/profile"
